@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Monster Energy — трекер вкусов</title>
+<!-- Закрыто от поисковиков: сайт виден только по прямой ссылке -->
+<meta name="robots" content="noindex, nofollow, noarchive, noimageindex">
+<meta name="googlebot" content="noindex, nofollow">
+<meta name="theme-color" content="#0a0a0a">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/favicon-32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="Monster Tracker">
+<style>
+  :root{
+    --green:#a5ff00; --green2:#7bbf00; --bg:#0a0a0a; --panel:#141414;
+    --panel2:#1c1c1c; --line:#2a2a2a; --txt:#e8e8e8; --mut:#9a9a9a;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:radial-gradient(1200px 600px at 50% -10%, #16210a 0%, var(--bg) 55%) fixed;
+    color:var(--txt); font-family:"Segoe UI",system-ui,Roboto,Arial,sans-serif;
+    -webkit-tap-highlight-color:transparent;
+  }
+  a{color:var(--green)}
+
+  /* ===================== ЭКРАН ВХОДА ===================== */
+  #loginView{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+  .loginbox{
+    width:100%;max-width:420px;background:var(--panel);border:1px solid var(--line);
+    border-radius:18px;padding:30px 24px;text-align:center;
+    box-shadow:0 20px 60px rgba(0,0,0,.5);
+  }
+  .loginbox h1{
+    margin:0 0 4px;font-size:26px;color:var(--green);font-weight:800;letter-spacing:1px;
+    text-shadow:0 0 18px rgba(165,255,0,.35);
+  }
+  .loginbox .tagline{color:var(--mut);font-size:13px;margin-bottom:22px}
+  .modebadge{
+    display:inline-block;font-size:11px;padding:3px 10px;border-radius:20px;margin-bottom:18px;
+    border:1px solid var(--line);color:var(--mut);
+  }
+  .modebadge.local{color:#ff9f43;border-color:#7a4a14}
+  .modebadge.cloud{color:#39c0ff;border-color:#15506b}
+
+  .gbtn{
+    width:100%;display:flex;align-items:center;justify-content:center;gap:10px;
+    background:#fff;color:#1f1f1f;border:none;border-radius:11px;padding:12px;
+    font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;transition:.15s;
+  }
+  .gbtn:hover{filter:brightness(.95)}
+  .gbtn svg{width:20px;height:20px}
+
+  .divider{display:flex;align-items:center;gap:10px;color:var(--mut);font-size:12px;margin:18px 0}
+  .divider::before,.divider::after{content:"";flex:1;height:1px;background:var(--line)}
+
+  .emailrow{display:flex;flex-direction:column;gap:8px;text-align:left}
+  .emailrow label{font-size:12px;color:var(--mut)}
+  .emailrow input[type=email]{
+    background:var(--panel2);color:var(--txt);border:1px solid var(--line);
+    border-radius:10px;padding:11px;font-size:14px;outline:none;font-family:inherit;
+  }
+  .emailrow input[type=email]:focus{border-color:var(--green2)}
+  .linkbtn{
+    background:var(--panel2);color:var(--txt);border:1px solid var(--line);
+    border-radius:10px;padding:11px;font-size:14px;cursor:pointer;font-family:inherit;transition:.15s;
+  }
+  .linkbtn:hover{border-color:var(--green2);color:var(--green)}
+
+  .remember{display:flex;align-items:center;gap:8px;justify-content:center;margin-top:18px;color:var(--mut);font-size:13px;cursor:pointer;user-select:none}
+  .remember input{width:17px;height:17px;accent-color:var(--green2);cursor:pointer}
+
+  .locallink{display:block;margin-top:20px;font-size:12px;color:var(--mut)}
+  .locallink button{background:none;border:none;color:var(--green);cursor:pointer;font-size:12px;text-decoration:underline;font-family:inherit;padding:0}
+  .loginnote{margin-top:16px;font-size:11px;color:var(--mut);line-height:1.5}
+
+  /* ===================== ШАПКА КАБИНЕТА ===================== */
+  #appView{display:none}
+  header.top{
+    padding:14px 16px 10px; text-align:center; position:sticky; top:0; z-index:20;
+    background:linear-gradient(180deg, rgba(10,10,10,.97) 70%, rgba(10,10,10,0));
+    backdrop-filter:blur(4px);
+  }
+  .accountbar{
+    max-width:1180px;margin:0 auto 8px;display:flex;align-items:center;gap:10px;
+    justify-content:flex-end;font-size:12px;color:var(--mut);
+  }
+  .accountbar .who{display:flex;align-items:center;gap:8px;margin-right:auto}
+  .accountbar .who img{width:26px;height:26px;border-radius:50%;border:1px solid var(--line)}
+  .syncdot{display:inline-flex;align-items:center;gap:6px;font-size:11px}
+  .syncdot .dot{width:8px;height:8px;border-radius:50%;background:var(--mut)}
+  .syncdot.ok .dot{background:var(--green)}
+  .syncdot.saving .dot{background:#f6a623}
+  .syncdot.offline .dot{background:#ff6b6b}
+  .minibtn{
+    background:var(--panel2);color:var(--txt);border:1px solid var(--line);
+    border-radius:8px;padding:6px 10px;font-size:12px;cursor:pointer;font-family:inherit;
+  }
+  .minibtn:hover{border-color:var(--green2);color:var(--green)}
+
+  h1.maintitle{
+    margin:0; font-size:clamp(20px,4vw,30px); letter-spacing:1px;
+    color:var(--green); text-shadow:0 0 18px rgba(165,255,0,.35); font-weight:800;
+  }
+  .sub{color:var(--mut); font-size:12px; margin-top:4px}
+  .progwrap{max-width:760px;margin:12px auto 0;padding:0 6px}
+  .progbar{height:14px;background:#222;border-radius:10px;overflow:hidden;border:1px solid var(--line)}
+  .progfill{height:100%;width:0;background:linear-gradient(90deg,var(--green2),var(--green));transition:width .4s ease}
+  .progtxt{font-size:13px;margin-top:6px;color:var(--mut)}
+  .progtxt b{color:var(--green)}
+
+  .controls{
+    max-width:1180px;margin:14px auto 0;padding:10px 12px;display:flex;flex-wrap:wrap;
+    gap:8px;align-items:center;justify-content:center;
+    background:var(--panel);border:1px solid var(--line);border-radius:14px;
+  }
+  .controls input[type=text], .controls select{
+    background:var(--panel2);color:var(--txt);border:1px solid var(--line);
+    border-radius:9px;padding:9px 11px;font-size:14px;outline:none;font-family:inherit;
+  }
+  .controls input[type=text]{min-width:200px;flex:1 1 220px;max-width:360px}
+  .controls input[type=text]:focus,.controls select:focus{border-color:var(--green2)}
+  .btn{
+    background:var(--panel2);color:var(--txt);border:1px solid var(--line);
+    border-radius:9px;padding:9px 12px;font-size:13px;cursor:pointer;transition:.15s;font-family:inherit;
+  }
+  .btn:hover{border-color:var(--green2);color:var(--green)}
+
+  main{max-width:1180px;margin:18px auto 60px;padding:0 12px}
+  .legend{font-size:12px;color:var(--mut);text-align:center;margin:10px 0 18px;line-height:1.9}
+  .rb{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700;margin:0 3px;border:1px solid}
+  .r1{color:#a5ff00;border-color:#506b00;background:#1b2400}
+  .r2{color:#39c0ff;border-color:#15506b;background:#021c26}
+  .r3{color:#c98bff;border-color:#54307a;background:#160726}
+  .r4{color:#ff9f43;border-color:#7a4a14;background:#241303}
+  .r5{color:#ffd24a;border-color:#7a651a;background:#241e02}
+
+  .group{margin-bottom:26px}
+  .ghead{
+    display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none;
+    padding:10px 12px;background:var(--panel);border:1px solid var(--line);
+    border-radius:12px;position:sticky;top:120px;z-index:10;
+  }
+  .ghead h2{margin:0;font-size:17px;color:var(--green);flex:1}
+  .ghead .cnt{font-size:12px;color:var(--mut)}
+  .ghead .arr{transition:.2s;color:var(--mut)}
+  .group.collapsed .arr{transform:rotate(-90deg)}
+  .group.collapsed .grid{display:none}
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:12px;margin-top:12px}
+  .card{
+    display:flex;gap:11px;padding:10px;background:var(--panel);border:1px solid var(--line);
+    border-radius:13px;transition:.15s;position:relative;overflow:hidden;
+  }
+  .card:hover{border-color:#3a3a3a}
+  .card.done{border-color:var(--green2);box-shadow:0 0 0 1px rgba(165,255,0,.25) inset}
+  .card.done .name{color:var(--green)}
+  .card.alc{background:linear-gradient(180deg,#1a0f0f,var(--panel))}
+
+  .thumb{
+    width:74px;min-width:74px;height:104px;border-radius:9px;overflow:hidden;position:relative;
+    background:var(--c,#333);display:flex;align-items:center;justify-content:center;
+    cursor:zoom-in;border:1px solid rgba(255,255,255,.08);
+  }
+  .thumb .ph{text-align:center;font-size:10px;line-height:1.25;padding:5px;color:#0a0a0a;font-weight:800;text-shadow:0 1px 1px rgba(255,255,255,.25);overflow:hidden}
+  .thumb .ph small{display:block;font-weight:600;opacity:.75;margin-top:3px;font-size:9px}
+  .thumb img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#111}
+
+  .body{flex:1;min-width:0;display:flex;flex-direction:column}
+  .name{font-size:14px;font-weight:700;line-height:1.25}
+  .taste{font-size:12px;color:var(--mut);margin-top:3px;line-height:1.3}
+  .tags{margin-top:auto;display:flex;flex-wrap:wrap;gap:5px;padding-top:8px}
+  .tag{font-size:10px;padding:2px 7px;border-radius:20px;border:1px solid var(--line);color:var(--mut)}
+  .tag.st-new{color:#a5ff00;border-color:#506b00}
+  .tag.st-lim{color:#ff9f43;border-color:#7a4a14}
+  .tag.st-disc{color:#ff6b6b;border-color:#7a2020}
+  .tag.st-alc{color:#ff8fb0;border-color:#7a2040}
+  .tag.st-reg{color:#39c0ff;border-color:#15506b}
+
+  .row2{display:flex;align-items:center;gap:8px;margin-top:7px;flex-wrap:wrap}
+  .chk{display:flex;align-items:center;gap:7px;cursor:pointer;font-size:12px;color:var(--mut);user-select:none;margin-right:auto}
+  .chk input{width:19px;height:19px;accent-color:var(--green2);cursor:pointer}
+  .photo,.editbtn,.revertbtn{
+    font-size:11px;text-decoration:none;border:1px solid var(--line);padding:3px 8px;border-radius:8px;
+    color:var(--mut);background:transparent;cursor:pointer;font-family:inherit;
+  }
+  .photo:hover,.editbtn:hover,.revertbtn:hover{color:var(--green);border-color:var(--green2)}
+  .revertbtn{display:none}
+  .card.custom .revertbtn{display:inline-block;color:#ff9f43;border-color:#7a4a14}
+
+  .empty{text-align:center;color:var(--mut);padding:40px}
+  footer{max-width:1180px;margin:0 auto 14px;padding:14px;color:var(--mut);font-size:12px;text-align:center;line-height:1.7}
+  .disclaimer{max-width:1180px;margin:0 auto 40px;padding:0 16px 24px;color:#6f6f6f;font-size:11px;text-align:center;line-height:1.6}
+  .reportlink{display:inline-block;margin:6px 0;padding:7px 14px;border:1px solid var(--line);border-radius:9px;
+    color:var(--green);text-decoration:none;font-size:12px;background:transparent;cursor:pointer;font-family:inherit}
+  .reportlink:hover{border-color:var(--green2);background:#10180a}
+  .legalbox{max-width:680px;max-height:86vh;overflow-y:auto;background:var(--panel);border:1px solid var(--line);
+    border-radius:14px;padding:22px 24px;text-align:left;color:var(--txt)}
+  .legalbox h2{margin:0 0 14px;color:var(--green);font-size:20px}
+  .legalbox p{font-size:13px;line-height:1.6;color:#cfcfcf;margin:0 0 12px}
+  .legalbox b{color:#e8e8e8}
+  .legalbox .legalcontact{font-size:13px;color:#cfcfcf;border-top:1px solid var(--line);padding-top:12px}
+  .legalbox a{color:var(--green)}
+
+  .modal{position:fixed;inset:0;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center;z-index:100;padding:20px}
+  .modal.open{display:flex}
+  .modal .box{max-width:90vw;max-height:90vh;text-align:center}
+  .modal img{max-width:90vw;max-height:78vh;border-radius:12px;border:1px solid var(--line);background:#111}
+  .modal .cap{color:#fff;margin-top:10px;font-size:15px}
+  .modal .cap a{display:inline-block;margin-top:8px}
+
+  @media (max-width:560px){
+    .grid{grid-template-columns:1fr}
+    .ghead{top:150px}
+  }
+</style>
+</head>
+<body>
+
+<!-- ===================== ЭКРАН ВХОДА ===================== -->
+<div id="loginView">
+  <div class="loginbox">
+    <h1>🐲 MONSTER TRACKER</h1>
+    <div class="tagline">Коллекция вкусов Monster Energy</div>
+    <div class="modebadge" id="modeBadge">режим…</div>
+
+    <button class="gbtn" id="googleBtn">
+      <svg viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+      Войти через Google
+    </button>
+
+    <div class="divider">или по почте</div>
+
+    <div class="emailrow">
+      <label for="emailInput">E-mail — пришлём ссылку для входа</label>
+      <input type="email" id="emailInput" placeholder="you@gmail.com" autocomplete="email">
+      <button class="linkbtn" id="emailBtn">✉ Прислать ссылку для входа</button>
+    </div>
+
+    <label class="remember"><input type="checkbox" id="rememberCb" checked> запомнить меня на этом устройстве</label>
+
+    <div class="locallink">
+      <button id="localBtn">Пока попробовать без входа (локально)</button>
+    </div>
+    <div class="loginnote" id="loginNote"></div>
+    <div class="loginnote" style="margin-top:14px;opacity:.75;line-height:1.6">
+      Неофициальный некоммерческий фан-проект. Не связан с Monster Energy® и не одобрен компанией.
+      Товарные знаки и изображения принадлежат их правообладателям.
+    </div>
+    <button class="reportlink" id="legalBtnLogin" type="button" style="margin-top:12px">ℹ️ Правовая информация и контакты</button>
+  </div>
+</div>
+
+<!-- ===================== КАБИНЕТ (ТРЕКЕР) ===================== -->
+<div id="appView">
+  <header class="top">
+    <div class="accountbar">
+      <span class="who" id="whoBox"></span>
+      <span class="syncdot" id="syncDot"><span class="dot"></span><span id="syncTxt">—</span></span>
+      <button class="minibtn" id="logoutBtn">Выйти</button>
+    </div>
+    <h1 class="maintitle">🐲 MONSTER ENERGY · ТРЕКЕР ВКУСОВ</h1>
+    <div class="sub">Родина бренда: 🇺🇸 США (Corona, Калифорния) · с 18 апреля 2002 г.</div>
+    <div class="progwrap">
+      <div class="progbar"><div class="progfill" id="progfill"></div></div>
+      <div class="progtxt" id="progtxt">Попробовано: <b>0</b> из 0</div>
+    </div>
+  </header>
+
+  <div class="controls">
+    <input type="text" id="search" placeholder="🔎 Поиск по названию или вкусу…">
+    <select id="fLine"><option value="">Все линейки</option></select>
+    <select id="fRarity">
+      <option value="">Любая редкость</option>
+      <option value="1">Обычный</option><option value="2">Необычный</option>
+      <option value="3">Редкий</option><option value="4">Очень редкий</option>
+      <option value="5">Легендарный</option>
+    </select>
+    <select id="fRegion"><option value="">Все регионы</option></select>
+    <select id="fStatus">
+      <option value="">Все</option>
+      <option value="todo">Только непробованные</option>
+      <option value="done">Только пробованные</option>
+    </select>
+    <button class="btn" id="expand">Свернуть всё</button>
+    <button class="btn" id="export">⬇ Экспорт</button>
+    <button class="btn" id="importBtn">⬆ Импорт</button>
+    <input type="file" id="importFile" accept="application/json" style="display:none">
+    <button class="btn" id="cacheBtn" title="Скачать все фото в память устройства, чтобы работали без интернета">📥 Фото офлайн</button>
+    <button class="btn" id="installBtn" style="display:none">⬇ Установить приложение</button>
+  </div>
+
+  <main>
+    <div class="legend">
+      Редкость:
+      <span class="rb r1">Обычный</span><span class="rb r2">Необычный</span>
+      <span class="rb r3">Редкий</span><span class="rb r4">Очень редкий</span>
+      <span class="rb r5">Легендарный</span>
+      <br>🔍 <b>фото</b> — найти банку в Google · ✎ <b>фото</b> — поставить своё · клик по банке — увеличить
+    </div>
+    <div id="list"></div>
+    <div class="empty" id="empty" style="display:none">Ничего не найдено по фильтрам 🙃</div>
+  </main>
+
+  <footer id="footer"></footer>
+  <div class="disclaimer">
+    <button class="reportlink" id="legalBtn" type="button">ℹ️ Правовая информация и контакты</button>
+    <div style="margin-top:10px">
+      Неофициальный некоммерческий фан-проект. Не связан с Monster Energy® / Monster Beverage Corp.
+      «Monster Energy» и названия вкусов — товарные знаки их правообладателей.<br>
+      Жалобы и просьбы об удалении — кнопка «Правовая информация и контакты» выше.
+    </div>
+  </div>
+</div><!-- /#appView -->
+
+<!-- Полный правовой блок (модалка) — ВНЕ #appView, открывается и на входе -->
+<div class="modal" id="legalModal">
+    <div class="legalbox" onclick="event.stopPropagation()">
+      <h2>Правовая информация</h2>
+      <p><b>1. Статус проекта.</b> Это неофициальный, любительский, <b>некоммерческий</b> фан-проект,
+      созданный энтузиастом исключительно для личного учёта и удобства коллекционеров.
+      Сайт не является и не выдаёт себя за официальный ресурс, не аффилирован, не спонсируется,
+      не одобрен и никак не связан с Monster Energy®, Monster Beverage Corporation, их дочерними
+      компаниями или партнёрами. На сайте нет рекламы, продаж, платных функций и сбора пожертвований.</p>
+
+      <p><b>2. Товарные знаки.</b> «Monster», «Monster Energy», названия линеек и вкусов, логотипы и
+      иные обозначения являются товарными знаками и интеллектуальной собственностью их
+      соответствующих правообладателей. Они используются здесь исключительно в информационных и
+      описательных целях — для идентификации реальных существующих продуктов (номинативное
+      использование) — и не означают какой-либо связи с правообладателями или их одобрения.</p>
+
+      <p><b>3. Изображения и контент.</b> Фотографии продуктов могут принадлежать их авторам и
+      правообладателям и приводятся в справочных целях. Автор проекта не претендует на права на эти
+      изображения и не извлекает из них прибыли. Если вы являетесь правообладателем и считаете, что
+      какой-либо материал размещён неправомерно — <b>напишите на контакт ниже, и материал будет
+      удалён в кратчайший срок без споров и предварительных условий.</b></p>
+
+      <p><b>4. Отказ от гарантий.</b> Информация (вкусы, редкость, описания, регионы, наличие)
+      предоставляется «как есть», без каких-либо гарантий точности, полноты или актуальности, и
+      может содержать ошибки. Сайт не является официальным источником сведений о продуктах.
+      Используйте информацию на свой страх и риск.</p>
+
+      <p><b>5. Никаких советов.</b> Материалы сайта не являются медицинской, диетологической, торговой
+      или иной профессиональной рекомендацией и не призывают к покупке или употреблению каких-либо
+      напитков. Энергетические напитки содержат кофеин; отдельные позиции в каталоге относятся к
+      алкогольной продукции (например, линейки The Beast / Nasty Beast) и упоминаются лишь как
+      справочные записи без цели рекламы или продажи. Употребление любых напитков — на личное
+      усмотрение и ответственность пользователя; ограничения по возрасту и здоровью соблюдает сам
+      пользователь.</p>
+
+      <p><b>6. Ответственность.</b> Автор проекта не несёт ответственности за любые прямые или
+      косвенные убытки, возникшие в связи с использованием сайта. Пользователь использует сайт
+      добровольно и принимает эти условия.</p>
+
+      <p><b>7. Персональные данные.</b> Для входа используется сервис Google Firebase, который может
+      обрабатывать ваш e-mail и базовые данные профиля исключительно для работы личного кабинета и
+      синхронизации ваших отметок. Данные не продаются и не передаются третьим лицам.
+      Чтобы удалить свой аккаунт и данные — напишите на контакт ниже.</p>
+
+      <p><b>8. Удаление по требованию.</b> По любому обоснованному обращению правообладателя или
+      уполномоченного органа соответствующий материал либо весь сайт будут оперативно удалены.</p>
+
+      <p class="legalcontact">Жалобы и просьбы об удалении присылайте на почту:<br>
+        <b id="legalEmail" style="color:#fff;font-size:16px;user-select:all">pogodin4olezhkaffff@gmail.com</b><br>
+        <span style="display:inline-block;margin-top:8px">
+          <button class="reportlink" id="copyEmail" type="button">📋 Скопировать</button>
+          <a class="reportlink" href="mailto:pogodin4olezhkaffff@gmail.com?subject=Monster%20Tracker%20legal">✉ Написать</a>
+        </span></p>
+
+      <button class="btn" id="legalClose" type="button" style="margin-top:8px">Закрыть</button>
+    </div>
+  </div>
+
+<div class="modal" id="modal">
+  <div class="box"><img id="modalImg" src="" alt=""><div class="cap" id="modalCap"></div></div>
+</div>
+<input type="file" id="photoFile" accept="image/*" style="display:none">
+
+<script src="flavors-data.js"></script>
+<script src="firebase-config.js"></script>
+<script type="module" src="cloud.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

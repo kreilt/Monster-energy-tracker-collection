@@ -1,0 +1,31 @@
+# --- Архив (временное, можно удалить) ---
+_archive/
+
+# --- Рабочие заметки и окружение ---
+.claude/
+docs/
+
+# --- Чужие фото (НЕ коммитим: авторские права) ---
+# Фотографии банок принадлежат их авторам. В репозиторий не кладём.
+# Восстанавливаются скриптом download-images.ps1 при необходимости.
+images/*.jpg
+images/*.jpeg
+images/*.png
+images/*.webp
+
+# --- Личные/экспортные данные ---
+monster-progress*.json
+image-manifest.json
+
+# --- Временные файлы ---
+_*.json
+_check*/
+_incoming/
+*.tmp
+
+# --- Системное ---
+.DS_Store
+Thumbs.db
+node_modules/
+.firebase/
+*.log

@@ -1,0 +1,16 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Каждый пользователь читает и пишет ТОЛЬКО свой документ users/{uid}.
+    // uid должен совпадать с залогиненным пользователем (auth.uid).
+    match /users/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // Всё остальное — запрещено.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
