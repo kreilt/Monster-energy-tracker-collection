@@ -12,7 +12,7 @@
    Версию кэша поднимать при изменении файлов оболочки, чтобы обновилось.
    ===================================================================== */
 
-const VERSION = "monster-v2";
+const VERSION = "monster-v3";
 const SHELL_CACHE = "shell-" + VERSION;
 const IMG_CACHE = "img-" + VERSION;
 

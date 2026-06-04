@@ -121,6 +121,7 @@ function makeCloudStore(user){
   let tried = new Set();
   let images = {};
   let loaded = false;
+  let dirty = false;        // есть несохранённые локальные правки
   const changeCbs=[], statusCbs=[];
   let saveTimer=null;
 
@@ -135,18 +136,23 @@ function makeCloudStore(user){
     return "ok";
   }
 
-  // подпись данных, чтобы не перерисовывать на metadata-only событиях
-  function dataSig(){
-    let s = [...tried].sort().join("|") + "##";
-    const keys = Object.keys(images).sort();
-    for(const k of keys){ s += k + ":" + (images[k]?images[k].length:0) + ";"; }
+  // подпись произвольного состояния (чтобы сравнивать и не перерисовывать зря)
+  function sigOf(t, im){
+    let s = [...t].sort().join("|") + "##";
+    const keys = Object.keys(im).sort();
+    for(const k of keys){ s += k + ":" + (im[k]?im[k].length:0) + ";"; }
     return s;
   }
+  function dataSig(){ return sigOf(tried, images); }
   let lastSig = null;
 
   // живое обновление. includeMetadataChanges:true — чтобы ловить подтверждение
   // сервера (переход hasPendingWrites true→false) и обновлять индикатор.
   const unsubSnap = fb.onSnapshot(ref, { includeMetadataChanges:true }, (snap)=>{
+    // Пока есть несохранённые локальные правки (dirty) — НЕ принимаем данные из
+    // снимка, иначе старое облачное состояние затрёт изменение (например,
+    // удалённое фото вернётся). Берём только статус синхронизации.
+    if(dirty){ emitStatus(statusFrom(snap.metadata)); return; }
     const d = snap.data() || {};
     tried = new Set(Array.isArray(d.tried)? d.tried : []);
     images = (d.images && typeof d.images==="object") ? d.images : {};
@@ -173,19 +179,29 @@ function makeCloudStore(user){
   }
 
   function scheduleSave(){
+    dirty = true;           // появилась несохранённая правка
     emitStatus("saving");
     clearTimeout(saveTimer);
     saveTimer = setTimeout(persist, 400); // дебаунс, чтобы не писать на каждый клик
   }
   async function persist(){
+    // фиксируем состояние на момент записи, чтобы понять — не появилось ли новых правок
+    const snapTried=[...tried], snapImages={...images};
+    const sigAtSave = sigOf(snapTried, snapImages);
     try{
+      // Пишем документ ЦЕЛИКОМ, без merge: merge для вложенной карты images НЕ
+      // удаляет снятые ключи (из-за этого удалённое фото возвращалось). Клиент
+      // всегда держит полное актуальное состояние, поэтому пишем его целиком.
       await fb.setDoc(ref, {
-        tried:[...tried], images, email:user.email||"", updatedAt: fb.serverTimestamp()
-      }, { merge:true });
+        tried:snapTried, images:snapImages, email:user.email||"", updatedAt: fb.serverTimestamp()
+      });
+      // снимаем dirty только если за время записи не появилось новых правок
+      if(dataSig()===sigAtSave){ dirty=false; lastSig=sigAtSave; }
       emitStatus(navigator.onLine ? "ok" : "offline");
     }catch(e){
       console.warn("save error:", e);
-      emitStatus(navigator.onLine ? "ok" : "offline"); // офлайн-кэш Firestore досинхронит позже сам
+      // оставляем dirty=true — Firestore досинхронит из офлайн-кэша позже
+      emitStatus(navigator.onLine ? "ok" : "offline");
     }
   }
 

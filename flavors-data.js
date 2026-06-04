@@ -30,6 +30,9 @@ window.MONSTER_DATA = [
 {n:"Monster Energy Unleaded",l:"Original",t:"без кофеина",r:5,g:"США",c:"#cccccc",s:"disc"},
 {n:"Monster Energy Ubermonster",l:"Original",t:"премиум-брю, насыщенный",r:5,g:"США",c:"#5a3e2b",s:"disc"},
 {n:"Monster Energy BFC",l:"Original",t:"гигантская банка (~950мл), оригинал",r:4,g:"США",c:"#a5cd39",s:"disc"},
+{n:"Monster Energy Strawberry Shot",l:"Original",t:"оригинал + «шот» клубники, с сахаром",r:1,g:"США",c:"#e63950",s:"new"},
+{n:"Monster Energy Strawberry Shot Zero Sugar",l:"Original",t:"оригинал + «шот» клубники, без сахара",r:1,g:"США",c:"#c0223a",s:"new"},
+{n:"Monster Energy Electric Blue",l:"Original",t:"голубая малина, с сахаром",r:2,g:"США",c:"#1e90ff",s:"new"},
 
 /* ---- Nitro (с азотом) ---- */
 {n:"Monster Energy Nitro Super Dry",l:"Nitro",t:"насыщен азотом, сухой цитрус",r:2,g:"Глобально",c:"#c0c0c0",s:""},
@@ -76,6 +79,8 @@ window.MONSTER_DATA = [
 {n:"Juice Monster Rio Punch",l:"Juice",t:"папайя, ваниль, чёрная смородина",r:3,g:"Европа",c:"#ff7f50",s:"reg"},
 {n:"Juice Monster Viking Berry",l:"Juice",t:"северные ягоды",r:3,g:"Европа",c:"#4a6fa5",s:"reg"},
 {n:"Monster Energy Mixxd Punch",l:"Juice",t:"фруктовый пунш с вишней",r:3,g:"США",c:"#8e44ad",s:"disc"},
+{n:"Juice Monster Voodoo Grape",l:"Juice",t:"виноград (в стиле вуду Нового Орлеана), с сахаром",r:2,g:"США",c:"#6b3fa0",s:"new"},
+{n:"Juice Monster Strawberry Lemonade",l:"Juice",t:"клубничный лимонад с соком (лимитка к 250-летию США)",r:3,g:"США",c:"#ff5e7a",s:"new"},
 
 /* ---- Java Monster (кофе) ---- */
 {n:"Java Monster Mean Bean",l:"Java",t:"кофе + ваниль",r:1,g:"США",c:"#6f4e37",s:""},
